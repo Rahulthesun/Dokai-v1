@@ -1,0 +1,59 @@
+{
+  "name": "dokai-v1",
+  "displayName": "dokai-v1",
+  "description": "AI Documentaion Tool for generating & maintaining Documentations for your Code for collab & team projects",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dokai.autodocMode",
+        "title": "Toggle Auto-Docs Mode",
+        "category": "Dokai"
+      },
+
+      {
+        "command": "dokai.generateDocs",
+        "title": "Generate Docs",
+        "category": "Dokai"
+      }
+    ],
+    
+    "keybindings" : [
+     {
+      "command": "dokai.generateDocs",
+      "key": "ctrl+d",
+      "when": "editorTextFocus" 
+      }  
+      ,
+      {
+        "command": "dokai.autodocMode",
+        "key": "ctrl+alt+d",
+        "when": "editorTextFocus" 
+        }  
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.21.0"
+  },
+  "dependencies": {
+    "axios": "^1.8.3"
+  }
+}
