@@ -20,6 +20,53 @@ function activate(context) {
 	console.log('Welcome to dokai AI Doc Editor');
 	let ctrlPressed = false;
 
+	
+	vscode.workspace.onDidSaveTextDocument((document) => {
+		let filetype=new Map([
+			[".py","def"],
+			[".js","function"]
+		])
+		const fileName = document.uri.fsPath;
+		const extname = fileName.slice(fileName.lastIndexOf("."));
+		const filecontent=document.getText();
+		let textarr=filecontent.split(" ");
+		const checkpoint=[];
+		let count=0;
+		const functionarr=[]
+
+		vscode.window.setStatusBarMessage("Docs are being written" , 5000);
+
+		if (filecontent)
+			console.log("File content logged on save");
+		else
+			console.log("File content Not logged on save");
+		
+		let flag=true
+		//Gets the starting index of each function keyword
+		textarr.forEach(function(word){
+			if (word==filetype.get(extname)){
+				checkpoint.push(count);
+				flag=true;
+			}
+			//Push functionname if previous word was function keyword
+			if (flag==true){
+				functionarr.push(word);
+				flag=false;
+			}
+			count+=(word.length +1);
+				
+			
+		})
+		vscode.window.setStatusBarMessage("Documenation completed" , 5000);
+		console.log("Checkpoint:",checkpoint);
+
+			
+
+			
+
+		})
+
+
 	let docmodeToggle = vscode.commands.registerCommand("dokai.autodocMode" , async () => {
 		isDocModeEnabled = !isDocModeEnabled;
 		if (isDocModeEnabled) {
@@ -72,6 +119,7 @@ function deactivate() {
 	vscode.window.showInformationMessage("dokai Doc-Mode Deactivated");
 	console.log('dokai Doc-Mode Deactivated');
 }
+
 
 module.exports = {
 	activate,

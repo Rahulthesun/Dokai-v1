@@ -18,26 +18,23 @@
         "title": "Toggle Auto-Docs Mode",
         "category": "Dokai"
       },
-
       {
         "command": "dokai.generateDocs",
         "title": "Generate Docs",
         "category": "Dokai"
       }
     ],
-    
-    "keybindings" : [
-     {
-      "command": "dokai.generateDocs",
-      "key": "ctrl+d",
-      "when": "editorTextFocus" 
-      }  
-      ,
+    "keybindings": [
+      {
+        "command": "dokai.generateDocs",
+        "key": "ctrl+d",
+        "when": "editorTextFocus"
+      },
       {
         "command": "dokai.autodocMode",
         "key": "ctrl+alt+d",
-        "when": "editorTextFocus" 
-        }  
+        "when": "editorTextFocus"
+      }
     ]
   },
   "scripts": {
