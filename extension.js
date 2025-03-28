@@ -19,6 +19,73 @@ function activate(context) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Welcome to dokai AI Doc Editor');
 	let ctrlPressed = false;
+	let functionnamelist=new Set();
+	//const filecontentarr=document.getText().split("\n");
+	vscode.workspace.onDidChangeTextDocument((event) => {
+		let filetype=new Map([
+			[".py","def"],
+			[".js","function"]
+		])
+		const fileName = event.document.uri.fsPath;
+		const filecontentarr=event.document.getText().split("\n");
+		const extname = fileName.slice(fileName.lastIndexOf("."));
+		 
+		const changes = event.contentChanges;
+		const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            let cursorPosition = editor.selection.active;
+			let changedline=cursorPosition.line;
+			let changedchar=cursorPosition.character;
+			let keyword=filetype.get(extname);
+
+			const functionnamelist = new Set();
+			const functionlocations = new Map();
+
+			for (let i = changedline; i >= 0; i--) {
+				if (filecontentarr[i].includes(keyword)) {
+					const regex = new RegExp(`\\b${keyword}\\b\\s+(\\w+)`, 'g');
+					const matches = filecontentarr[i].matchAll(regex);
+					for (const match of matches) {
+						// Find function end by tracking indentation or block(Pls change this in the future)
+						let endLine = i;
+						let startIndent = filecontentarr[i].search(/\S/);
+						
+						// Find function end by checking indentation
+						for (let j = i + 1; j < filecontentarr.length; j++) {
+							let currentIndent = filecontentarr[j].search(/\S/);
+							if (currentIndent <= startIndent && filecontentarr[j].trim() !== '') {
+								endLine = j - 1;
+								break;
+							}
+						}
+						const functionName = match[1];
+						const functionInfo = {
+							name: functionName,
+							startLine: i,
+							endLine: endLine,
+							startCharacter: match.index,
+							endCharacter: filecontentarr[i].length
+						};
+						if (functionlocations.has(functionName)) {
+							const existingFunc = functionlocations.get(functionName);
+							functionlocations.set(functionName, {
+								...existingFunc,
+								startLine: i,
+								endLine: endLine
+							});
+						}
+						else {
+							// Add new function
+							functionlocations.set(functionName, functionInfo);
+						}
+
+							functionnamelist.add(functionName);
+					}			
+			}
+		}
+	}
+	
+	})
 
 	
 	vscode.workspace.onDidSaveTextDocument((document) => {
@@ -27,33 +94,65 @@ function activate(context) {
 			[".js","function"]
 		])
 		const fileName = document.uri.fsPath;
+		const filecontentarr=document.getText().split("\n");
 		const extname = fileName.slice(fileName.lastIndexOf("."));
-		const filecontent=document.getText();
-		let textarr=filecontent.split(" ");
+		let filecontent=document.getText;
+		
 		const checkpoint=[];
 		let count=0;
 		const functionarr=[]
 
 		vscode.window.setStatusBarMessage("Docs are being written" , 5000);
 
+		const functionLocations = new Map();
+
 		if (filecontent)
 			console.log("File content logged on save");
 		else
 			console.log("File content Not logged on save");
 		
-		let flag=true
-		//Gets the starting index of each function keyword
-		textarr.forEach(function(word){
-			if (word==filetype.get(extname)){
-				checkpoint.push(count);
-				flag=true;
-			}
-			//Push functionname if previous word was function keyword
-			if (flag==true){
-				functionarr.push(word);
-				flag=false;
-			}
-			count+=(word.length +1);
+			filecontentarr.forEach((line, lineIndex) => {
+				const keyword = filetype.get(extname);
+				if (line.includes(keyword)) {
+					const regex = new RegExp(`\\b${keyword}\\b\\s+(\\w+)`);
+					const match = line.match(regex);
+					
+					if (match) {
+						// Find function end by tracking indentation(yeah change)
+						let endLine = lineIndex;
+						let startIndent = line.search(/\S/);
+						
+						for (let j = lineIndex + 1; j < filecontentarr.length; j++) {
+							let currentIndent = filecontentarr[j].search(/\S/);
+							if (currentIndent <= startIndent && filecontentarr[j].trim() !== '') {
+								endLine = j - 1;
+								break;
+							}
+						}
+		
+						const functionName = match[1];
+		
+						// Updating existing function or add new one
+						if (functionLocations.has(functionName)) {
+							const existingFunc = functionLocations.get(functionName);
+							functionLocations.set(functionName, {
+								...existingFunc,
+								startLine: lineIndex,
+								endLine: endLine
+							});
+						} else {
+							functionLocations.set(functionName, {
+								name: functionName,
+								startLine: lineIndex,
+								endLine: endLine
+							});
+						}
+		
+						checkpoint.push(count);
+						functionarr.push(functionName);
+					}
+				}
+				count += (line.length + 1);
 				
 			
 		})
